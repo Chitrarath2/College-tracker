@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Journey Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .status-badge-accepted { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .status-badge-rejected { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .status-badge-waitlisted { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        .status-badge-deferred { background-color: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+        .status-badge-pending { background-color: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+        .status-badge-withdrawn { background-color: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+        
+        /* Hide scrollbar for cleaner modals */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 min-h-screen text-gray-800 font-sans">
+
+    <nav class="w-full max-w-6xl mx-auto p-6 flex justify-between items-center">
+        <div class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+            🎓 College<span class="font-light text-gray-600">Journey</span>
+        </div>
+        
+        <div class="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-200">
+            <span class="text-xs font-semibold uppercase text-gray-400 tracking-wider">Mode:</span>
+            <button onclick="setMode(false)" id="btnView" class="px-3 py-1 rounded-full text-sm transition text-gray-500 hover:text-indigo-600">Public View</button>
+            <button onclick="setMode(true)" id="btnEdit" class="px-3 py-1 rounded-full text-sm transition bg-indigo-100 text-indigo-700 font-medium">Edit Profile</button>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-6 pb-20">
+        
+        <div class="glass-panel rounded-2xl shadow-xl p-8 mb-10 border border-white/50 relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 edit-only hidden">
+                <button onclick="openProfileModal()" class="text-gray-400 hover:text-indigo-600 transition">
+                    ✏️ Edit Bio
+                </button>
+            </div>
+
+            <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
+                <div class="w-32 h-32 rounded-full bg-gradient-to-tr from-indigo-400 to-purple-400 p-1 shadow-lg flex-shrink-0">
+                    <div class="w-full h-full rounded-full bg-white flex items-center justify-center text-5xl overflow-hidden">
+                        <span id="profileEmoji">👨‍🎓</span>
+                    </div>
+                </div>
+
+                <div class="flex-1 text-center md:text-left">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2" id="profileName">Student Name</h1>
+                    <p class="text-gray-600 mb-6 max-w-2xl" id="profileBio">Aspiring Computer Scientist. Passionate about AI and Jazz music. Class of 2028.</p>
+                    
+                    <div class="flex flex-wrap justify-center md:justify-start gap-4">
+                        <div class="bg-white/80 px-4 py-2 rounded-lg shadow-sm border border-gray-100">
+                            <span class="block text-xs text-gray-500 uppercase font-bold">GPA</span>
+                            <span class="text-lg font-mono font-semibold text-indigo-600" id="statGPA">4.0</span>
+                        </div>
+                        <div class="bg-white/80 px-4 py-2 rounded-lg shadow-sm border border-gray-100">
+                            <span class="block text-xs text-gray-500 uppercase font-bold">SAT/ACT</span>
+                            <span class="text-lg font-mono font-semibold text-purple-600" id="statTest">1550</span>
+                        </div>
+                        <div class="bg-white/80 px-4 py-2 rounded-lg shadow-sm border border-gray-100">
+                            <span class="block text-xs text-gray-500 uppercase font-bold">Intended Major</span>
+                            <span class="text-lg font-medium text-pink-600" id="statMajor">CS</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="edit-only hidden self-center md:self-start">
+                    <button onclick="openCollegeModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl shadow-lg shadow-indigo-200 transition flex items-center gap-2 transform hover:-translate-y-1">
+                        <span>➕ Add College</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex overflow-x-auto gap-2 mb-8 pb-2 no-scrollbar" id="filterContainer">
+            <button onclick="filterColleges('all')" class="filter-btn active bg-gray-900 text-white px-4 py-1.5 rounded-full text-sm font-medium transition whitespace-nowrap">All Applications</button>
+            <button onclick="filterColleges('US')" class="filter-btn bg-white text-gray-600 hover:bg-gray-100 px-4 py-1.5 rounded-full text-sm font-medium transition whitespace-nowrap">🇺🇸 US</button>
+            <button onclick="filterColleges('UK')" class="filter-btn bg-white text-gray-600 hover:bg-gray-100 px-4 py-1.5 rounded-full text-sm font-medium transition whitespace-nowrap">🇬🇧 UK</button>
+            <button onclick="filterColleges('accepted')" class="filter-btn bg-green-50 text-green-700 hover:bg-green-100 px-4 py-1.5 rounded-full text-sm font-medium transition whitespace-nowrap">Accepted</button>
+        </div>
+
+        <div id="collegesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </div>
+
+        <div id="emptyState" class="hidden text-center py-20">
+            <div class="text-6xl mb-4">📭</div>
+            <h3 class="text-xl font-bold text-gray-400">No applications found</h3>
+            <p class="text-gray-400">Add colleges to start building your profile.</p>
+        </div>
+    </main>
+
+    <div id="collegeModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all scale-100">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800">Add New College</h3>
+                <button onclick="closeModals()" class="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">College Name</label>
+                    <input type="text" id="inpName" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="e.g. Stanford University">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Country</label>
+                        <select id="inpCountry" onchange="updateTypes()" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none">
+                            <option value="US">🇺🇸 USA</option>
+                            <option value="UK">🇬🇧 UK</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Round</label>
+                        <select id="inpType" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none">
+                            </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Status</label>
+                    <select id="inpStatus" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none">
+                        <option value="pending">Pending Result</option>
+                        <option value="accepted">Accepted 🎉</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="deferred">Deferred</option>
+                        <option value="waitlisted">Waitlisted</option>
+                        <option value="withdrawn">Withdrawn</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Notes / Scholarship</label>
+                    <input type="text" id="inpNotes" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" placeholder="e.g. Presidential Scholarship">
+                </div>
+                <button onclick="addCollege()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 mt-2">Add to Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="profileModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800">Edit Profile Details</h3>
+                <button onclick="closeModals()" class="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="col-span-1">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Emoji</label>
+                        <input type="text" id="editEmoji" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-center" placeholder="👨‍🎓">
+                    </div>
+                    <div class="col-span-3">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Full Name</label>
+                        <input type="text" id="editName" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Bio</label>
+                    <textarea id="editBio" rows="2" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg resize-none"></textarea>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">GPA</label>
+                        <input type="text" id="editGPA" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Test Score</label>
+                        <input type="text" id="editTest" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Major</label>
+                        <input type="text" id="editMajor" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+                    </div>
+                </div>
+                <button onclick="saveProfile()" class="w-full bg-gray-900 text-white font-bold py-3 rounded-lg hover:bg-black transition mt-2">Save Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- State Management ---
+        let isEditMode = true; // Default to edit mode for owner
+        const appTypes = {
+            US: ['RD', 'REA', 'ED', 'ED2', 'EA', 'Rolling'],
+            UK: ['UCAS', 'Direct', 'Oxbridge']
+        };
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProfile();
+            loadColleges();
+            updateTypes();
+            setMode(true); // Initialize in edit mode
+        });
+
+        // --- View Logic ---
+        function setMode(edit) {
+            isEditMode = edit;
+            const btnView = document.getElementById('btnView');
+            const btnEdit = document.getElementById('btnEdit');
+            
+            // Toggle Button Styles
+            if(edit) {
+                btnEdit.classList.add('bg-indigo-100', 'text-indigo-700');
+                btnEdit.classList.remove('text-gray-500');
+                btnView.classList.remove('bg-indigo-100', 'text-indigo-700');
+                btnView.classList.add('text-gray-500');
+            } else {
+                btnView.classList.add('bg-indigo-100', 'text-indigo-700');
+                btnView.classList.remove('text-gray-500');
+                btnEdit.classList.remove('bg-indigo-100', 'text-indigo-700');
+                btnEdit.classList.add('text-gray-500');
+            }
+
+            // Toggle Visibility of Edit Elements
+            document.querySelectorAll('.edit-only').forEach(el => {
+                el.classList.toggle('hidden', !edit);
+            });
+            
+            // Re-render grid to show/hide delete buttons/dropdowns
+            loadColleges(); 
+        }
+
+        // --- Profile Functions ---
+        function loadProfile() {
+            const defaultProfile = {
+                name: "Alex Student",
+                bio: "Aspiring Engineer. Passionate about Robotics & AI.",
+                gpa: "4.0",
+                test: "1520",
+                major: "Robotics",
+                emoji: "🚀"
+            };
+            const profile = JSON.parse(localStorage.getItem('profile')) || defaultProfile;
+
+            document.getElementById('profileName').textContent = profile.name;
+            document.getElementById('profileBio').textContent = profile.bio;
+            document.getElementById('statGPA').textContent = profile.gpa;
+            document.getElementById('statTest').textContent = profile.test;
+            document.getElementById('statMajor').textContent = profile.major;
+            document.getElementById('profileEmoji').textContent = profile.emoji;
+
+            // Pre-fill modal
+            document.getElementById('editName').value = profile.name;
+            document.getElementById('editBio').value = profile.bio;
+            document.getElementById('editGPA').value = profile.gpa;
+            document.getElementById('editTest').value = profile.test;
+            document.getElementById('editMajor').value = profile.major;
+            document.getElementById('editEmoji').value = profile.emoji;
+        }
+
+        function saveProfile() {
+            const profile = {
+                name: document.getElementById('editName').value,
+                bio: document.getElementById('editBio').value,
+                gpa: document.getElementById('editGPA').value,
+                test: document.getElementById('editTest').value,
+                major: document.getElementById('editMajor').value,
+                emoji: document.getElementById('editEmoji').value
+            };
+            localStorage.setItem('profile', JSON.stringify(profile));
+            loadProfile();
+            closeModals();
+        }
+
+        // --- College Data Functions ---
+        function loadColleges(filter = 'all') {
+            const colleges = JSON.parse(localStorage.getItem('colleges') || '[]');
+            const grid = document.getElementById('collegesGrid');
+            grid.innerHTML = '';
+            
+            let displayList = colleges;
+            if (filter === 'US') displayList = colleges.filter(c => c.country === 'US');
+            if (filter === 'UK') displayList = colleges.filter(c => c.country === 'UK');
+            if (filter === 'accepted') displayList = colleges.filter(c => c.status === 'accepted');
+
+            if (displayList.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+            } else {
+                document.getElementById('emptyState').classList.add('hidden');
+            }
+
+            displayList.forEach(college => {
+                grid.innerHTML += createCard(college);
+            });
+        }
+
+        function createCard(college) {
+            const statusLabels = {
+                pending: "Pending", accepted: "Accepted", rejected: "Rejected",
+                deferred: "Deferred", waitlisted: "Waitlisted", withdrawn: "Withdrawn"
+            };
+            
+            // Logic: In edit mode show select, in view mode show badge
+            let statusHTML = '';
+            if (isEditMode) {
+                statusHTML = `
+                    <select onchange="updateStatus(${college.id}, this.value)" 
+                            class="text-xs font-medium py-1 px-2 rounded cursor-pointer outline-none bg-gray-50 border border-gray-200 hover:bg-gray-100">
+                        ${Object.keys(statusLabels).map(k => 
+                            `<option value="${k}" ${college.status === k ? 'selected' : ''}>${statusLabels[k]}</option>`
+                        ).join('')}
+                    </select>
+                `;
+            } else {
+                statusHTML = `
+                    <span class="px-2 py-1 rounded text-xs font-medium status-badge-${college.status}">
+                        ${statusLabels[college.status]}
+                    </span>
+                `;
+            }
+
+            // Logic: Delete button only in edit mode
+            const deleteBtn = isEditMode ? `
+                <button onclick="deleteCollege(${college.id})" class="text-gray-300 hover:text-red-500 transition px-2">
+                    🗑️
+                </button>
+            ` : '';
+
+            return `
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition p-5 flex flex-col justify-between h-full">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">${college.country} • ${college.type}</span>
+                            ${statusHTML}
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 leading-tight mb-1">${college.name}</h3>
+                        <p class="text-sm text-gray-500 mb-4">${college.notes || 'No notes added'}</p>
+                    </div>
+                    <div class="pt-4 border-t border-gray-50 flex justify-between items-center">
+                        <span class="text-xs text-gray-400">Added on ${new Date(college.id).toLocaleDateString()}</span>
+                        ${deleteBtn}
+                    </div>
+                </div>
+            `;
+        }
+
+        function addCollege() {
+            const name = document.getElementById('inpName').value;
+            if(!name) return alert("Name required");
+
+            const newCollege = {
+                id: Date.now(),
+                name: name,
+                country: document.getElementById('inpCountry').value,
+                type: document.getElementById('inpType').value,
+                status: document.getElementById('inpStatus').value,
+                notes: document.getElementById('inpNotes').value
+            };
+
+            const colleges = JSON.parse(localStorage.getItem('colleges') || '[]');
+            colleges.push(newCollege);
+            localStorage.setItem('colleges', JSON.stringify(colleges));
+            
+            // Reset form
+            document.getElementById('inpName').value = '';
+            document.getElementById('inpNotes').value = '';
+            
+            closeModals();
+            loadColleges();
+        }
+
+        function deleteCollege(id) {
+            if(!confirm("Remove this college?")) return;
+            let colleges = JSON.parse(localStorage.getItem('colleges') || '[]');
+            colleges = colleges.filter(c => c.id !== id);
+            localStorage.setItem('colleges', JSON.stringify(colleges));
+            loadColleges();
+        }
+
+        function updateStatus(id, newStatus) {
+            let colleges = JSON.parse(localStorage.getItem('colleges') || '[]');
+            const index = colleges.findIndex(c => c.id === id);
+            if(index !== -1) {
+                colleges[index].status = newStatus;
+                localStorage.setItem('colleges', JSON.stringify(colleges));
+                // Reload to update visual styles if necessary
+                loadColleges();
+            }
+        }
+
+        // --- Helper Functions ---
+        function filterColleges(type) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-gray-900', 'text-white');
+                btn.classList.add('bg-white', 'text-gray-600');
+            });
+            event.target.classList.remove('bg-white', 'text-gray-600');
+            event.target.classList.add('bg-gray-900', 'text-white');
+            loadColleges(type);
+        }
+
+        function updateTypes() {
+            const country = document.getElementById('inpCountry').value;
+            const select = document.getElementById('inpType');
+            select.innerHTML = appTypes[country].map(t => `<option value="${t}">${t}</option>`).join('');
+        }
+
+        function openCollegeModal() {
+            document.getElementById('collegeModal').classList.remove('hidden');
+        }
+
+        function openProfileModal() {
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function closeModals() {
+            document.getElementById('collegeModal').classList.add('hidden');
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
